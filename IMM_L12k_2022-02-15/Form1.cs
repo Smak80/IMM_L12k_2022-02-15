@@ -16,8 +16,32 @@ namespace IMM_L12k_2022_02_15
 
         private void panel1_Resize(object sender, EventArgs e)
         {
-            p = new Painter(10, panel1.Size);
-            panel1.Invalidate();
+            p.ContainerSize = panel1.Size;
+            panel1.Refresh();
+        }
+
+        private void panel1_Click(object sender, EventArgs e)
+        {
+            //p.CreateFigures();
+            //panel1.Refresh();
+        }
+
+        private void panel1_MouseDown(object sender, MouseEventArgs e)
+        {
+            p.StartDrawing(e.Location);
+            //panel1.Refresh();
+        }
+
+        private void panel1_MouseUp(object sender, MouseEventArgs e)
+        {
+            p.StopDrawing();
+            //panel1.Refresh();
+        }
+
+        private void panel1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (p.Draw(e.Location))
+                panel1.Refresh();
         }
     }
 }
