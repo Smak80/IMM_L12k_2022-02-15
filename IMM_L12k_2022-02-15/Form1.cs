@@ -20,28 +20,23 @@ namespace IMM_L12k_2022_02_15
             panel1.Refresh();
         }
 
-        private void panel1_Click(object sender, EventArgs e)
-        {
-            //p.CreateFigures();
-            //panel1.Refresh();
-        }
-
         private void panel1_MouseDown(object sender, MouseEventArgs e)
         {
+            p.InsType = e.Button == MouseButtons.Left
+                ? Painter.InstrumentType.PenDrawer
+                : Painter.InstrumentType.RectFiller;
             p.StartDrawing(e.Location);
-            //panel1.Refresh();
         }
 
         private void panel1_MouseUp(object sender, MouseEventArgs e)
         {
-            p.StopDrawing();
-            //panel1.Refresh();
+            p.StopDrawing(e.Location);
+            panel1.Update();
         }
 
         private void panel1_MouseMove(object sender, MouseEventArgs e)
         {
-            if (p.Draw(e.Location))
-                panel1.Refresh();
+            p.Draw(e.Location, panel1.CreateGraphics());
         }
     }
 }

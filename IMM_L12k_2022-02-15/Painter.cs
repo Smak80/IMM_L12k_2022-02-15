@@ -12,17 +12,18 @@ namespace IMM_L12k_2022_02_15
         public enum InstrumentType
         {
             PenDrawer,
+            RectDrawer,
+            RectFiller
         }
-        private int figureCount = 5;
-        private Image img;
-        private List<Instrument> ins = new List<Instrument>();
-
-        public InstrumentType it
+        //private int figureCount = 5;
+        private Image? _img;
+        private readonly List<Instrument> _ins = new ();
+        public InstrumentType InsType
         {
             get;
             set;
         }
-        public int FigureCount
+        /*public int FigureCount
         {
             get => figureCount;
             set
@@ -34,35 +35,34 @@ namespace IMM_L12k_2022_02_15
                     > 20 => 20
                 };
             }
-        }
-
-        private Random random = new Random();
-        private List<Figure> fgs = new List<Figure>();
-        private Size containerSize;
+        }*/
+        
+        private Size _containerSize;
         public Size ContainerSize
         {
-            get => containerSize;
+            get => _containerSize;
             set
             {
-                containerSize = value;
-                var img = new Bitmap(containerSize.Width, containerSize.Height, PixelFormat.Format24bppRgb);
+                _containerSize = value;
+                var img = new Bitmap(_containerSize.Width, _containerSize.Height, PixelFormat.Format24bppRgb);
                 Graphics.FromImage(img).Clear(Color.White);
                 var ig = Graphics.FromImage(img);
-                if (this.img is not null)
-                    ig.DrawImage(this.img, 0, 0);
-                this.img = img;
-
+                if (_img is not null)
+                    ig.DrawImage(this._img, 0, 0);
+                _img = img;
             }
         }
         public Painter(int figureCount, Size containerSize)
         {
-            FigureCount = figureCount;
+            //FigureCount = figureCount;
             ContainerSize = containerSize;
             //CreateFigures();
-            ins.Add(new PenDrawer());
+            _ins.Add(new PenDrawer());
+            _ins.Add(new RectDrawer());
+            _ins.Add(new RectDrawer(true));
         }
 
-        public void CreateFigures()
+        /*public void CreateFigures()
         {
             fgs.Clear();
             for (int i = 0; i < FigureCount; i++)
@@ -73,33 +73,47 @@ namespace IMM_L12k_2022_02_15
                     new Ellipse(x, y, ContainerSize):
                     new Rect(x, y, ContainerSize));
             }
-        }
+        }*/
 
         public void Paint(Graphics g)
         {
-            //var ig = Graphics.FromImage(img);
-            //ig.Clear(Color.White);
-            /*foreach (var figure in fgs)
+            if (_img is not null)
             {
-                figure.Paint(ig);
-            }*/
-            g.DrawImage(img, 0, 0);
+                g.DrawImage(_img, 0, 0);
+            }
         }
 
-        public void StartDrawing(Point eLocation)
+        public void StartDrawing(Point location)
         {
-            ins[(int)it].StartDrawing(eLocation);   
+            if (_img is not null)
+            {
+                _ins[(int)InsType].Start(location, (Image)_img);
+            }
         }
 
-        public void StopDrawing()
+        public void StopDrawing(Point location)
         {
-            ins[(int)it].StopDrawing();
+            if (_img is not null)
+            {
+                var ig = Graphics.FromImage(_img);
+                _ins[(int)InsType].Draw(ig, location);
+            }
+            _ins[(int)InsType].Stop();
         }
 
-        public bool Draw(Point eLocation)
+        public void Draw(Point location, Graphics tempG)
         {
-            var ig = Graphics.FromImage(img);
-            return ins[(int)it].Draw(ig, eLocation);
+            var bg =
+                BufferedGraphicsManager.Current.Allocate(
+                    tempG, 
+                    Rectangle.Ceiling(tempG.VisibleClipBounds)
+                );
+            if (_img is not null)
+                bg.Graphics.DrawImage(_img, 0, 0);
+            else bg.Graphics.Clear(Color.White);
+            _ins[(int)InsType].Draw(bg.Graphics, location);
+            bg.Render(tempG);
+            bg.Dispose();
         }
     }
 }
